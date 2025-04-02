@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pastel Skills Sorter</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* pastel gradient background */
+      body {
+        background: linear-gradient(
+          to bottom right,
+          rgba(255, 240, 245, 1) 0%,
+          rgba(242, 255, 239, 1) 100%
+        );
+      }
+      /* soft pastel card shadows and hover lift */
+      .trait-box {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.1s ease;
+      }
+      .trait-box:hover {
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen">
+    <div id="app" class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8"></div>
+
+    <script>
+      /* 
+       * Pastel Skills Sorter (50 skill traits)
+       * NO frameworks or build tools required. 
+       * Uses plain JS + TailwindCDN for styling.
+       */
+
+      const TRAITS = [
+        { label: "Active Listening", description: "Fully focusing on others to understand and respond thoughtfully." },
+        { label: "Communication (Verbal)", description: "Effectively conveying ideas and information by speaking." },
+        { label: "Communication (Written)", description: "Clearly expressing ideas in writing." },
+        { label: "Public Speaking", description: "Delivering oral presentations with confidence." },
+        { label: "Persuasion", description: "Influencing others to agree or take action." },
+        { label: "Negotiation", description: "Finding common ground to reach mutually beneficial agreements." },
+        { label: "Leadership", description: "Guiding and motivating a team to achieve goals." },
+        { label: "Teamwork/Collaboration", description: "Working cooperatively to accomplish shared objectives." },
+        { label: "Conflict Resolution", description: "Resolving disagreements effectively and diplomatically." },
+        { label: "Empathy", description: "Understanding and sharing the feelings of others." },
+        { label: "Emotional Intelligence", description: "Recognizing and managing emotions in oneself and others." },
+        { label: "Adaptability", description: "Adjusting smoothly to new challenges and environments." },
+        { label: "Problem-Solving", description: "Identifying and resolving issues creatively." },
+        { label: "Critical Thinking", description: "Analyzing facts to form sound judgments." },
+        { label: "Creativity", description: "Developing imaginative ideas or solutions." },
+        { label: "Decision-Making", description: "Selecting an option based on analysis and insight." },
+        { label: "Time Management", description: "Organizing time to efficiently achieve tasks." },
+        { label: "Organization", description: "Structuring tasks and resources in an orderly manner." },
+        { label: "Attention to Detail", description: "Ensuring accuracy by focusing on small elements." },
+        { label: "Resilience", description: "Bouncing back quickly from setbacks." },
+        { label: "Stress Management", description: "Maintaining composure and balance under pressure." },
+        { label: "Networking", description: "Building professional relationships for mutual benefit." },
+        { label: "Mentoring", description: "Supporting and guiding others to develop their skills." },
+        { label: "Patience", description: "Remaining calm when faced with delays or challenges." },
+        { label: "Motivation (Self & Others)", description: "Inspiring sustained enthusiasm and effort." },
+
+        { label: "Coding/Programming", description: "Writing code to develop software applications." },
+        { label: "Data Analysis", description: "Interpreting complex datasets to uncover insights." },
+        { label: "Mathematics", description: "Applying numerical methods for problem-solving." },
+        { label: "Research", description: "Investigating topics thoroughly to gather information." },
+        { label: "Foreign Languages", description: "Communicating fluently in non-native languages." },
+        { label: "Graphic Design", description: "Creating visual concepts using design principles." },
+        { label: "Video Editing", description: "Cutting and assembling video footage into cohesive content." },
+        { label: "Photography", description: "Capturing images with artistic or technical skill." },
+        { label: "Music Composition/Performance", description: "Creating or performing musical works." },
+        { label: "Writing (Creative/Technical)", description: "Crafting narratives or technical documentation effectively." },
+        { label: "Digital Marketing", description: "Promoting products and brands via digital channels." },
+        { label: "Social Media Management", description: "Managing online presence across social networks." },
+        { label: "Financial Literacy/Budgeting", description: "Handling money and planning finances effectively." },
+        { label: "Sales", description: "Selling products or services to meet customer needs." },
+        { label: "Project Management", description: "Planning and overseeing projects to successful outcomes." },
+        { label: "Mechanical Skills", description: "Understanding and repairing mechanical systems." },
+        { label: "Carpentry/Woodworking", description: "Constructing or crafting items from wood." },
+        { label: "Cooking/Culinary Arts", description: "Preparing and experimenting with meals." },
+        { label: "First Aid/CPR", description: "Providing basic medical assistance in emergencies." },
+        { label: "Automotive Repair", description: "Diagnosing and fixing vehicle issues." },
+        { label: "Electrical Wiring", description: "Installing or repairing electrical systems safely." },
+        { label: "Scientific Lab Skills", description: "Conducting experiments and analyzing data in a lab." },
+        { label: "Event Planning", description: "Coordinating logistics for gatherings and celebrations." },
+        { label: "Teaching/Tutoring", description: "Instructing students individually or in groups." },
+        { label: "Acting/Performance", description: "Portraying roles convincingly on stage or screen." }
+      ];
+
+      let keep = [];
+      let discard = [];
+      let remaining = [...TRAITS];
+
+      function render() {
+        const app = document.getElementById("app");
+        const currentTrait = remaining[0];
+        const sortedCount = keep.length + discard.length;
+        const total = TRAITS.length;
+        const progressPercent = Math.round((sortedCount / total) * 100);
+
+        app.innerHTML = `
+          <!-- Title & subtitle -->
+          <h1 class="text-4xl font-extrabold mb-2 text-center text-purple-600">
+            Sort Your Skills
+          </h1>
+          <p class="mb-6 text-center text-md text-purple-700 max-w-xl mx-auto">
+            Decide for each skill: Keep or Discard.<br/>
+            You can edit your choices anytime in the columns.
+          </p>
+
+          <!-- Progress bar -->
+          <div class="mb-8 text-center">
+            <div class="w-full bg-purple-100 rounded-full h-4">
+              <div class="bg-purple-300 h-4 rounded-full" style="width: ${progressPercent}%"></div>
+            </div>
+            <p class="text-sm text-purple-700 mt-1 font-medium">
+              ${sortedCount} of ${total} sorted (${progressPercent}%)
+            </p>
+          </div>
+
+          <!-- 3-column layout -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Discard Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-pink-600">Discard</h2>
+              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+                ${discard
+                  .map((label) => {
+                    const t = TRAITS.find((trait) => trait.label === label);
+                    return `
+                      <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
+                        <p class="font-semibold text-pink-700 flex justify-between items-center">
+                          ${t.label}
+                          <button
+                            class="text-xs text-pink-600 underline ml-2"
+                            onclick="revertTrait('${label}', 'discard')"
+                          >
+                            Remove
+                          </button>
+                        </p>
+                        <p class="text-xs text-pink-700 mt-1">${t.description}</p>
+                      </li>
+                    `;
+                  })
+                  .join("")}
+              </ul>
+            </div>
+
+            <!-- Center Column: Current Skill -->
+            <div class="text-center">
+              <h2 class="text-xl font-bold mb-2 text-gray-700">Current Skill</h2>
+              ${
+                currentTrait
+                  ? `
+                    <div class="p-6 border border-gray-200 rounded bg-white trait-box inline-block">
+                      <p class="font-semibold text-gray-800 text-lg mb-1">
+                        ${currentTrait.label}
+                      </p>
+                      <p class="text-sm text-gray-600 mb-4">${currentTrait.description}</p>
+                      <div class="space-x-4">
+                        <button
+                          onclick="keepTrait()"
+                          class="px-4 py-2 bg-green-200 text-green-800 font-medium rounded hover:bg-green-300"
+                        >
+                          Keep
+                        </button>
+                        <button
+                          onclick="discardTrait()"
+                          class="px-4 py-2 bg-pink-200 text-pink-800 font-medium rounded hover:bg-pink-300"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  `
+                  : `<p class='text-sm text-gray-700 italic'>All skills sorted! You can still make changes below.</p>`
+              }
+              <!-- Reset Button -->
+              <button
+                onclick="resetAll()"
+                class="block mt-5 px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 mx-auto"
+              >
+                Reset All
+              </button>
+            </div>
+
+            <!-- Keep Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-green-600">
+                Keep <span class="text-sm text-green-700">(${keep.length})</span>
+              </h2>
+              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+                ${keep
+                  .map((label) => {
+                    const t = TRAITS.find((trait) => trait.label === label);
+                    return `
+                      <li class="p-3 border border-green-200 rounded bg-green-50 trait-box">
+                        <p class="font-semibold text-green-700 flex justify-between items-center">
+                          ${t.label}
+                          <button
+                            class="text-xs text-green-600 underline ml-2"
+                            onclick="revertTrait('${label}', 'keep')"
+                          >
+                            Remove
+                          </button>
+                        </p>
+                        <p class="text-xs text-green-700 mt-1">${t.description}</p>
+                      </li>
+                    `;
+                  })
+                  .join("")}
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+
+      // Moves current skill from middle to Keep
+      function keepTrait() {
+        if (!remaining[0]) return;
+        keep.push(remaining.shift().label);
+        render();
+      }
+
+      // Moves current skill from middle to Discard
+      function discardTrait() {
+        if (!remaining[0]) return;
+        discard.push(remaining.shift().label);
+        render();
+      }
+
+      // Revert a skill from Keep/Discard back to the middle
+      function revertTrait(label, from) {
+        if (from === "keep") {
+          keep = keep.filter((t) => t !== label);
+        } else if (from === "discard") {
+          discard = discard.filter((t) => t !== label);
+        }
+        const trait = TRAITS.find((t) => t.label === label);
+        remaining.push(trait);
+        render();
+      }
+
+      // Reset all skills to the middle pile
+      function resetAll() {
+        keep = [];
+        discard = [];
+        remaining = [...TRAITS];
+        render();
+      }
+
+      // Initial render
+      render();
+    </script>
+  </body>
+</html>
