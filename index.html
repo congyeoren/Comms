@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pastel Personality Trait Sorter</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* Additional overrides for a softer pastel vibe */
+      body {
+        /* pastel gradient background */
+        background: linear-gradient(
+          to bottom right,
+          rgba(255, 240, 245, 1) 0%,
+          rgba(242, 255, 239, 1) 100%
+        );
+      }
+
+      /* soft pastel card shadows */
+      .trait-box {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.1s ease;
+      }
+      .trait-box:hover {
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen">
+    <!-- Main container -->
+    <div id="app" class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8"></div>
+
+    <script>
+      /**
+       * Pastel Personality Trait Sorter
+       * - No external frameworks. Just Tailwind for styling + DOM manipulation in JS.
+       */
+
+      const TRAITS = [
+        { label: "Curious", description: "Eager to explore new ideas and experiences." },
+        { label: "Creative", description: "Able to produce original and imaginative ideas." },
+        { label: "Innovative", description: "Skilled at introducing new methods or ideas." },
+        { label: "Artistic", description: "Expresses themselves through various art forms." },
+        { label: "Adventurous", description: "Willing to take risks and try new things." },
+        { label: "Intellectual", description: "Engages deeply with ideas and enjoys thinking." },
+        { label: "Abstract thinker", description: "Good at thinking conceptually and seeing patterns." },
+        { label: "Imaginative", description: "Thinks in creative and fantastical ways." },
+        { label: "Original", description: "Comes up with unique and independent ideas." },
+        { label: "Versatile", description: "Adapts easily to different tasks or situations." },
+        { label: "Organised", description: "Keeps things tidy and plans ahead." },
+        { label: "Responsible", description: "Reliable and accountable for actions." },
+        { label: "Thorough", description: "Pays attention to detail and completeness." },
+        { label: "Planful", description: "Carefully makes and follows plans." },
+        { label: "Disciplined", description: "Maintains control and follows routines." },
+        { label: "Efficient", description: "Achieves maximum productivity with minimum waste." },
+        { label: "Achievement-oriented", description: "Focused on setting and reaching goals." },
+        { label: "Deliberate", description: "Takes thoughtful, intentional actions." },
+        { label: "Systematic", description: "Uses methodical approaches to solve problems." },
+        { label: "Dependable", description: "Can be counted on and trusted." },
+        { label: "Outgoing", description: "Enjoys meeting and interacting with people." },
+        { label: "Energetic", description: "Full of vitality and activity." },
+        { label: "Assertive", description: "Confident in expressing opinions and needs." },
+        { label: "Sociable", description: "Finds joy in social interactions." },
+        { label: "Enthusiastic", description: "Shows intense enjoyment and interest." },
+        { label: "Talkative", description: "Enjoys engaging in conversation." },
+        { label: "Action-oriented", description: "Prefers doing over deliberating." },
+        { label: "Group-oriented", description: "Prefers to work with others in teams." },
+        { label: "Optimistic", description: "Looks at the positive side of situations." },
+        { label: "Expressive", description: "Openly shows thoughts and emotions." },
+        { label: "Cooperative", description: "Works well with others to reach goals." },
+        { label: "Compassionate", description: "Feels and shows concern for others." },
+        { label: "Considerate", description: "Thinks of others’ feelings and needs." },
+        { label: "Helpful", description: "Eager to assist others." },
+        { label: "Empathetic", description: "Understands and shares others' emotions." },
+        { label: "Trusting", description: "Believes in the reliability of others." },
+        { label: "Patient", description: "Endures delays or problems calmly." },
+        { label: "Understanding", description: "Comprehends and accepts others’ perspectives." },
+        { label: "Diplomatic", description: "Handles situations with sensitivity and tact." },
+        { label: "Tactful", description: "Says or does things in a considerate way." },
+        { label: "Resilient", description: "Bounces back from setbacks." },
+        { label: "Calm", description: "Maintains composure under pressure." },
+        { label: "Composed", description: "Stays collected and in control." },
+        { label: "Stable", description: "Emotionally grounded and consistent." },
+        { label: "Self-assured", description: "Confident in one’s own abilities." },
+        { label: "Confident", description: "Believes in oneself and one’s decisions." },
+        { label: "Adaptable", description: "Adjusts well to change." },
+        { label: "Level-headed", description: "Thinks clearly in difficult situations." },
+        { label: "Steady", description: "Reliable and unwavering." },
+        { label: "Balanced", description: "Maintains equilibrium in life and emotions." }
+      ];
+
+      // Arrays for each pile
+      let keep = [];
+      let discard = [];
+      let remaining = [...TRAITS];
+
+      // Main render function
+      function render() {
+        const app = document.getElementById("app");
+        const currentTrait = remaining[0];
+        const sortedCount = keep.length + discard.length;
+        const total = TRAITS.length;
+        const progressPercent = Math.round((sortedCount / total) * 100);
+
+        // Build the UI
+        app.innerHTML = `
+          <!-- Title & subtitle -->
+          <h1 class="text-4xl font-extrabold mb-2 text-center text-purple-600">
+            Sort Your Personality Traits
+          </h1>
+          <p class="mb-6 text-center text-md text-purple-700 max-w-xl mx-auto">
+            Decide for each trait: Keep or Discard.<br/>
+            You can edit your choices anytime in the columns.
+          </p>
+
+          <!-- Progress bar -->
+          <div class="mb-8 text-center">
+            <div class="w-full bg-purple-100 rounded-full h-4">
+              <div class="bg-purple-300 h-4 rounded-full" style="width: ${progressPercent}%"></div>
+            </div>
+            <p class="text-sm text-purple-700 mt-1 font-medium">
+              ${sortedCount} of ${total} sorted (${progressPercent}%)
+            </p>
+          </div>
+
+          <!-- 3-column layout -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Discard Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-pink-600">Discard</h2>
+              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+                ${
+                  discard
+                    .map((label) => {
+                      const t = TRAITS.find((trait) => trait.label === label);
+                      return `
+                        <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
+                          <p class="font-semibold text-pink-700 flex justify-between items-center">
+                            ${t.label}
+                            <button
+                              class="text-xs text-pink-600 underline ml-2"
+                              onclick="revertTrait('${label}', 'discard')"
+                            >
+                              Remove
+                            </button>
+                          </p>
+                          <p class="text-xs text-pink-700 mt-1">${t.description}</p>
+                        </li>
+                      `;
+                    })
+                    .join("")
+                }
+              </ul>
+            </div>
+
+            <!-- Center Column: Current Trait -->
+            <div class="text-center">
+              <h2 class="text-xl font-bold mb-2 text-gray-700">Current Trait</h2>
+              ${
+                currentTrait
+                  ? `
+                    <div class="p-6 border border-gray-200 rounded bg-white trait-box inline-block">
+                      <p class="font-semibold text-gray-800 text-lg mb-1">
+                        ${currentTrait.label}
+                      </p>
+                      <p class="text-sm text-gray-600 mb-4">${currentTrait.description}</p>
+                      <div class="space-x-4">
+                        <button
+                          onclick="keepTrait()"
+                          class="px-4 py-2 bg-green-200 text-green-800 font-medium rounded hover:bg-green-300"
+                        >
+                          Keep
+                        </button>
+                        <button
+                          onclick="discardTrait()"
+                          class="px-4 py-2 bg-pink-200 text-pink-800 font-medium rounded hover:bg-pink-300"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                    `
+                  : `<p class='text-sm text-gray-700 italic'>All traits sorted! You can still make changes below.</p>`
+              }
+              <!-- Reset Button -->
+              <button
+                onclick="resetAll()"
+                class="block mt-5 px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 mx-auto"
+              >
+                Reset All
+              </button>
+            </div>
+
+            <!-- Keep Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-green-600">
+                Keep <span class="text-sm text-green-700">(${keep.length})</span>
+              </h2>
+              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+                ${
+                  keep
+                    .map((label) => {
+                      const t = TRAITS.find((trait) => trait.label === label);
+                      return `
+                        <li class="p-3 border border-green-200 rounded bg-green-50 trait-box">
+                          <p class="font-semibold text-green-700 flex justify-between items-center">
+                            ${t.label}
+                            <button
+                              class="text-xs text-green-600 underline ml-2"
+                              onclick="revertTrait('${label}', 'keep')"
+                            >
+                              Remove
+                            </button>
+                          </p>
+                          <p class="text-xs text-green-700 mt-1">${t.description}</p>
+                        </li>
+                      `;
+                    })
+                    .join("")
+                }
+              </ul>
+            </div>
+          </div>
+        `;
+      }
+
+      // Move the current trait from the middle to Keep
+      function keepTrait() {
+        if (!remaining[0]) return;
+        keep.push(remaining.shift().label);
+        render();
+      }
+
+      // Move the current trait from the middle to Discard
+      function discardTrait() {
+        if (!remaining[0]) return;
+        discard.push(remaining.shift().label);
+        render();
+      }
+
+      // Revert a trait from Keep/Discard back to the middle
+      function revertTrait(label, from) {
+        if (from === "keep") {
+          keep = keep.filter((t) => t !== label);
+        } else if (from === "discard") {
+          discard = discard.filter((t) => t !== label);
+        }
+        // Add trait back to 'remaining'
+        const trait = TRAITS.find((t) => t.label === label);
+        remaining.push(trait);
+        render();
+      }
+
+      // Reset everything
+      function resetAll() {
+        keep = [];
+        discard = [];
+        remaining = [...TRAITS];
+        render();
+      }
+
+      // Initial Render
+      render();
+    </script>
+  </body>
+</html>
