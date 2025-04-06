@@ -36,7 +36,7 @@
        * Tailwind for styling, fallback copy logic.
        ***********************************************/
 
-      // Personality traits from your previous list
+      // 50 personality traits
       const TRAITS = [
         { label: "Curious", description: "Eager to explore new ideas and experiences." },
         { label: "Creative", description: "Able to produce original and imaginative ideas." },
@@ -208,8 +208,8 @@
             </div>
           </div>
 
-          <!-- Prompt Box with Copy Button -->
-          <div class="mt-10 p-4 border border-gray-200 rounded bg-white trait-box inline-block mx-auto text-center">
+          <!-- Prompt Box with Copy Button (Center-Aligned) -->
+          <div class="mt-10 p-4 border border-gray-200 rounded bg-white trait-box w-fit mx-auto text-center">
             <h3 class="text-lg font-bold mb-2 text-purple-700">Your Prompt</h3>
             <p class="text-sm text-gray-600 whitespace-pre-wrap" id="promptText"></p>
             <button
@@ -264,7 +264,17 @@
       /**************************************
        * Copy to Clipboard with Fallback
        **************************************/
-      const PROMPT_TEXT = `I am a high school student exploring career options. My top 3 personalities are: [Personality 1], [Personality 2], and [Personality 3].\n\nPlease suggest 8-10 careers that strongly align with these skills. For each career, include:\n\n- A brief description (1-2 sentences).\n- Why it fits my skill combination.\n- Examples of industries or workplaces where this career exists.\n\nThen, recommend 1-2 additional skills I could develop to strengthen my fit for these careers.\n\nFormat your response in a clear list with headings.`;
+      const PROMPT_TEXT = `I am a high school student exploring career options. My top 3 personalities are: [Personality 1], [Personality 2], and [Personality 3].
+
+Please suggest 8-10 careers that strongly align with these skills. For each career, include:
+
+- A brief description (1-2 sentences).
+- Why it fits my skill combination.
+- Examples of industries or workplaces where this career exists.
+
+Then, recommend 1-2 additional skills I could develop to strengthen my fit for these careers.
+
+Format your response in a clear list with headings.`;
 
       async function copyPrompt() {
         if (navigator.clipboard && window.isSecureContext) {
