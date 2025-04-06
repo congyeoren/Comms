@@ -91,7 +91,7 @@
         { label: "Acting/Performance", description: "Portraying roles convincingly on stage or screen." }
       ];
 
-      // Buckets to hold the sorting states
+      // Sorting buckets
       let keep = [];
       let discard = [];
       let remaining = [...SKILLS];
@@ -124,7 +124,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Discard Column -->
             <div>
-              <h2 class="text-xl font-bold mb-2 text-pink-600">Discard</h2>
+              <h2 class="text-xl font-bold mb-2 text-pink-600 text-center">Discard</h2>
               <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
                 ${discard
                   .map((label) => {
@@ -182,9 +182,7 @@
 
             <!-- Keep Column -->
             <div>
-              <h2 class="text-xl font-bold mb-2 text-green-600">
-                Keep <span class="text-sm text-green-700">(${keep.length})</span>
-              </h2>
+              <h2 class="text-xl font-bold mb-2 text-green-600 text-center">Keep <span class="text-sm text-green-700">(${keep.length})</span></h2>
               <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
                 ${
                   keep
@@ -251,7 +249,7 @@
         } else if (from === "discard") {
           discard = discard.filter((s) => s !== label);
         }
-        const skill = SKILLS.find((s) => s.label === label);
+        const skill = SKILLS.find((sk) => sk.label === label);
         remaining.push(skill);
         render();
       }
