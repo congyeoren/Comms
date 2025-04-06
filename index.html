@@ -3,25 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pastel Personality Trait Sorter</title>
+    <title>Pastel Personality Sorter</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
-      /* Additional overrides for a softer pastel vibe */
+      /* Light pastel background gradient */
       body {
-        /* pastel gradient background */
         background: linear-gradient(
           to bottom right,
-          rgba(255, 240, 245, 1) 0%,
-          rgba(242, 255, 239, 1) 100%
+          rgba(255, 240, 245, 1),
+          rgba(240, 255, 249, 1)
         );
       }
-
-      /* soft pastel card shadows */
+      /* Subtle box shadow and hover lift for trait cards */
       .trait-box {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         transition: transform 0.1s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
       }
       .trait-box:hover {
         transform: translateY(-2px);
@@ -34,11 +31,12 @@
     <div id="app" class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8"></div>
 
     <script>
-      /**
-       * Pastel Personality Trait Sorter
-       * - No external frameworks. Just Tailwind for styling + DOM manipulation in JS.
-       */
+      /***********************************************
+       * Pastel Personality Sorter in pure HTML/JS
+       * Tailwind for styling, fallback copy logic.
+       ***********************************************/
 
+      // If you'd like to rename or adjust traits, do it here.
       const TRAITS = [
         { label: "Curious", description: "Eager to explore new ideas and experiences." },
         { label: "Creative", description: "Able to produce original and imaginative ideas." },
@@ -92,12 +90,11 @@
         { label: "Balanced", description: "Maintains equilibrium in life and emotions." }
       ];
 
-      // Arrays for each pile
+      // Buckets to hold the sorting states
       let keep = [];
       let discard = [];
       let remaining = [...TRAITS];
 
-      // Main render function
       function render() {
         const app = document.getElementById("app");
         const currentTrait = remaining[0];
@@ -105,15 +102,11 @@
         const total = TRAITS.length;
         const progressPercent = Math.round((sortedCount / total) * 100);
 
-        // Build the UI
         app.innerHTML = `
-          <!-- Title & subtitle -->
-          <h1 class="text-4xl font-extrabold mb-2 text-center text-purple-600">
-            Sort Your Personality Traits
-          </h1>
+          <h1 class="text-4xl font-extrabold mb-4 text-center text-purple-600">Sort Your Personality Traits</h1>
           <p class="mb-6 text-center text-md text-purple-700 max-w-xl mx-auto">
             Decide for each trait: Keep or Discard.<br/>
-            You can edit your choices anytime in the columns.
+            You can edit your choices anytime.
           </p>
 
           <!-- Progress bar -->
@@ -126,69 +119,61 @@
             </p>
           </div>
 
-          <!-- 3-column layout -->
+          <!-- 3 columns layout -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             <!-- Discard Column -->
             <div>
               <h2 class="text-xl font-bold mb-2 text-pink-600">Discard</h2>
-              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-                ${
-                  discard
-                    .map((label) => {
-                      const t = TRAITS.find((trait) => trait.label === label);
-                      return `
-                        <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
-                          <p class="font-semibold text-pink-700 flex justify-between items-center">
-                            ${t.label}
-                            <button
-                              class="text-xs text-pink-600 underline ml-2"
-                              onclick="revertTrait('${label}', 'discard')"
-                            >
-                              Remove
-                            </button>
-                          </p>
-                          <p class="text-xs text-pink-700 mt-1">${t.description}</p>
-                        </li>
-                      `;
-                    })
-                    .join("")
-                }
+              <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
+                ${discard
+                  .map((label) => {
+                    const t = TRAITS.find((trait) => trait.label === label);
+                    return `
+                      <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
+                        <p class="font-semibold text-pink-700 flex justify-between items-center">
+                          ${t.label}
+                          <button class="text-xs text-pink-600 underline ml-2"
+                            onclick="revertTrait('${label}', 'discard')"
+                          >
+                            Remove
+                          </button>
+                        </p>
+                        <p class="text-xs text-pink-700 mt-1">${t.description}</p>
+                      </li>
+                    `;
+                  })
+                  .join("")}
               </ul>
             </div>
 
-            <!-- Center Column: Current Trait -->
+            <!-- Middle Column: Current Trait -->
             <div class="text-center">
               <h2 class="text-xl font-bold mb-2 text-gray-700">Current Trait</h2>
               ${
                 currentTrait
                   ? `
                     <div class="p-6 border border-gray-200 rounded bg-white trait-box inline-block">
-                      <p class="font-semibold text-gray-800 text-lg mb-1">
-                        ${currentTrait.label}
-                      </p>
+                      <p class="font-semibold text-gray-800 text-lg mb-1">${currentTrait.label}</p>
                       <p class="text-sm text-gray-600 mb-4">${currentTrait.description}</p>
                       <div class="space-x-4">
-                        <button
-                          onclick="keepTrait()"
+                        <button onclick="keepTrait()"
                           class="px-4 py-2 bg-green-200 text-green-800 font-medium rounded hover:bg-green-300"
                         >
                           Keep
                         </button>
-                        <button
-                          onclick="discardTrait()"
+                        <button onclick="discardTrait()"
                           class="px-4 py-2 bg-pink-200 text-pink-800 font-medium rounded hover:bg-pink-300"
                         >
                           Discard
                         </button>
                       </div>
                     </div>
-                    `
+                  `
                   : `<p class='text-sm text-gray-700 italic'>All traits sorted! You can still make changes below.</p>`
               }
               <!-- Reset Button -->
-              <button
-                onclick="resetAll()"
+              <button onclick="resetAll()"
                 class="block mt-5 px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 mx-auto"
               >
                 Reset All
@@ -200,7 +185,7 @@
               <h2 class="text-xl font-bold mb-2 text-green-600">
                 Keep <span class="text-sm text-green-700">(${keep.length})</span>
               </h2>
-              <ul class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+              <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
                 ${
                   keep
                     .map((label) => {
@@ -209,8 +194,7 @@
                         <li class="p-3 border border-green-200 rounded bg-green-50 trait-box">
                           <p class="font-semibold text-green-700 flex justify-between items-center">
                             ${t.label}
-                            <button
-                              class="text-xs text-green-600 underline ml-2"
+                            <button class="text-xs text-green-600 underline ml-2"
                               onclick="revertTrait('${label}', 'keep')"
                             >
                               Remove
@@ -225,37 +209,53 @@
               </ul>
             </div>
           </div>
+
+          <!-- Prompt Box with Copy Button -->
+          <div class="mt-10 p-4 border border-gray-200 rounded bg-white trait-box inline-block">
+            <h3 class="text-lg font-bold mb-2 text-purple-700">Your Prompt</h3>
+            <p class="text-sm text-gray-600 whitespace-pre-wrap" id="promptText"></p>
+            <button
+              onclick="copyPrompt()"
+              class="mt-3 px-4 py-2 bg-purple-200 text-purple-800 text-sm font-medium rounded hover:bg-purple-300"
+            >
+              Copy This Prompt
+            </button>
+          </div>
         `;
+
+        // Insert the prompt text
+        const promptEl = document.getElementById("promptText");
+        if (promptEl) {
+          promptEl.textContent = PROMPT_TEXT;
+        }
       }
 
-      // Move the current trait from the middle to Keep
+      /**************************************
+       * Sorting Logic + Revert + Reset
+       **************************************/
       function keepTrait() {
         if (!remaining[0]) return;
         keep.push(remaining.shift().label);
         render();
       }
 
-      // Move the current trait from the middle to Discard
       function discardTrait() {
         if (!remaining[0]) return;
         discard.push(remaining.shift().label);
         render();
       }
 
-      // Revert a trait from Keep/Discard back to the middle
       function revertTrait(label, from) {
         if (from === "keep") {
           keep = keep.filter((t) => t !== label);
         } else if (from === "discard") {
           discard = discard.filter((t) => t !== label);
         }
-        // Add trait back to 'remaining'
         const trait = TRAITS.find((t) => t.label === label);
         remaining.push(trait);
         render();
       }
 
-      // Reset everything
       function resetAll() {
         keep = [];
         discard = [];
@@ -263,7 +263,49 @@
         render();
       }
 
-      // Initial Render
+      /**************************************
+       * Copy to Clipboard with Fallback
+       **************************************/
+      const PROMPT_TEXT = `I am a high school student exploring career options. My top 3 personalities are: [Personality 1], [Personality 2], and [Personality 3].\n\nPlease suggest 8-10 careers that strongly align with these skills. For each career, include:\n\n- A brief description (1-2 sentences).\n- Why it fits my skill combination.\n- Examples of industries or workplaces where this career exists.\n\nThen, recommend 1-2 additional skills I could develop to strengthen my fit for these careers.\n\nFormat your response in a clear list with headings.`;
+
+      async function copyPrompt() {
+        if (navigator.clipboard && window.isSecureContext) {
+          // Try the modern API
+          try {
+            await navigator.clipboard.writeText(PROMPT_TEXT);
+            alert("Prompt copied to clipboard!");
+            return;
+          } catch (err) {
+            console.error("Failed using navigator.clipboard:", err);
+          }
+        }
+        // Fallback
+        console.warn("Using fallback copy method.");
+        const textArea = document.createElement("textarea");
+        textArea.value = PROMPT_TEXT;
+        textArea.style.position = "fixed";
+        textArea.style.top = "-9999px";
+        textArea.style.left = "-9999px";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            alert("Prompt copied to clipboard!");
+          } else {
+            alert("Failed to copy prompt via fallback.");
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback copy failed:", fallbackErr);
+          alert("Failed to copy prompt.");
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
+      // Initial render
       render();
     </script>
   </body>
