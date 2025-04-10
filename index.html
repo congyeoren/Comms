@@ -36,8 +36,8 @@
        * Tailwind for styling, fallback copy logic.
        ***********************************************/
 
-      // 50 personality traits
-      const TRAITS = [
+      // 50 personalities (with short descriptions)
+      const PERSONALITIES = [
         { label: "Curious", description: "Eager to explore new ideas and experiences." },
         { label: "Creative", description: "Able to produce original and imaginative ideas." },
         { label: "Innovative", description: "Skilled at introducing new methods or ideas." },
@@ -93,19 +93,19 @@
       // Sorting buckets
       let keep = [];
       let discard = [];
-      let remaining = [...TRAITS];
+      let remaining = [...PERSONALITIES];
 
       function render() {
         const app = document.getElementById("app");
-        const currentTrait = remaining[0];
+        const currentPersonality = remaining[0];
         const sortedCount = keep.length + discard.length;
-        const total = TRAITS.length;
+        const total = PERSONALITIES.length;
         const progressPercent = Math.round((sortedCount / total) * 100);
 
         app.innerHTML = `
           <h1 class="text-4xl font-extrabold mb-4 text-center text-purple-600">Sort Your Personality Traits</h1>
           <p class="mb-6 text-center text-md text-purple-700 max-w-xl mx-auto">
-            Decide for each trait: Keep or Discard.<br/>
+            Decide for each personality: Keep or Discard.<br/>
             You can edit your choices anytime.
           </p>
 
@@ -127,18 +127,18 @@
               <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
                 ${discard
                   .map((label) => {
-                    const t = TRAITS.find((trait) => trait.label === label);
+                    const p = PERSONALITIES.find((pers) => pers.label === label);
                     return `
                       <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
                         <p class="font-semibold text-pink-700 flex justify-between items-center">
-                          ${t.label}
+                          ${p.label}
                           <button class="text-xs text-pink-600 underline ml-2"
-                            onclick="revertTrait('${label}', 'discard')"
+                            onclick="revertPersonality('${label}', 'discard')"
                           >
                             Remove
                           </button>
                         </p>
-                        <p class="text-xs text-pink-700 mt-1">${t.description}</p>
+                        <p class="text-xs text-pink-700 mt-1">${p.description}</p>
                       </li>
                     `;
                   })
@@ -146,22 +146,22 @@
               </ul>
             </div>
 
-            <!-- Middle Column: Current Trait -->
+            <!-- Middle Column: Current Personality -->
             <div class="text-center">
-              <h2 class="text-xl font-bold mb-2 text-gray-700">Current Trait</h2>
+              <h2 class="text-xl font-bold mb-2 text-gray-700">Current Personality</h2>
               ${
-                currentTrait
+                currentPersonality
                   ? `
                     <div class="p-6 border border-gray-200 rounded bg-white trait-box inline-block">
-                      <p class="font-semibold text-gray-800 text-lg mb-1">${currentTrait.label}</p>
-                      <p class="text-sm text-gray-600 mb-4">${currentTrait.description}</p>
+                      <p class="font-semibold text-gray-800 text-lg mb-1">${currentPersonality.label}</p>
+                      <p class="text-sm text-gray-600 mb-4">${currentPersonality.description}</p>
                       <div class="space-x-4">
-                        <button onclick="keepTrait()"
+                        <button onclick="keepPersonality()"
                           class="px-4 py-2 bg-green-200 text-green-800 font-medium rounded hover:bg-green-300"
                         >
                           Keep
                         </button>
-                        <button onclick="discardTrait()"
+                        <button onclick="discardPersonality()"
                           class="px-4 py-2 bg-pink-200 text-pink-800 font-medium rounded hover:bg-pink-300"
                         >
                           Discard
@@ -169,7 +169,7 @@
                       </div>
                     </div>
                   `
-                  : `<p class='text-sm text-gray-700 italic'>All traits sorted! You can still make changes below.</p>`
+                  : `<p class='text-sm text-gray-700 italic'>All personalities sorted! You can still make changes below.</p>`
               }
               <!-- Reset Button -->
               <button onclick="resetAll()"
@@ -181,24 +181,23 @@
 
             <!-- Keep Column -->
             <div>
-              <h2 class="text-xl font-bold mb-2 text-green-600 text-center">Keep <span class="text-sm text-green-700">(${keep.length})</span>
-              </h2>
+              <h2 class="text-xl font-bold mb-2 text-green-600 text-center">Keep <span class="text-sm text-green-700">(${keep.length})</span></h2>
               <ul class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
                 ${
                   keep
                     .map((label) => {
-                      const t = TRAITS.find((trait) => trait.label === label);
+                      const p = PERSONALITIES.find((pers) => pers.label === label);
                       return `
                         <li class="p-3 border border-green-200 rounded bg-green-50 trait-box">
                           <p class="font-semibold text-green-700 flex justify-between items-center">
-                            ${t.label}
+                            ${p.label}
                             <button class="text-xs text-green-600 underline ml-2"
-                              onclick="revertTrait('${label}', 'keep')"
+                              onclick="revertPersonality('${label}', 'keep')"
                             >
                               Remove
                             </button>
                           </p>
-                          <p class="text-xs text-green-700 mt-1">${t.description}</p>
+                          <p class="text-xs text-green-700 mt-1">${p.description}</p>
                         </li>
                       `;
                     })
@@ -208,7 +207,7 @@
             </div>
           </div>
 
-          <!-- Prompt Box with Copy Button (Center-Aligned) -->
+          <!-- Prompt Box with Copy Button -->
           <div class="mt-10 p-4 border border-gray-200 rounded bg-white trait-box w-fit mx-auto text-center">
             <h3 class="text-lg font-bold mb-2 text-purple-700">Your Prompt</h3>
             <p class="text-sm text-gray-600 whitespace-pre-wrap" id="promptText"></p>
@@ -231,33 +230,33 @@
       /**************************************
        * Sorting Logic + Revert + Reset
        **************************************/
-      function keepTrait() {
+      function keepPersonality() {
         if (!remaining[0]) return;
         keep.push(remaining.shift().label);
         render();
       }
 
-      function discardTrait() {
+      function discardPersonality() {
         if (!remaining[0]) return;
         discard.push(remaining.shift().label);
         render();
       }
 
-      function revertTrait(label, from) {
+      function revertPersonality(label, from) {
         if (from === "keep") {
           keep = keep.filter((s) => s !== label);
         } else if (from === "discard") {
           discard = discard.filter((s) => s !== label);
         }
-        const trait = TRAITS.find((s) => s.label === label);
-        remaining.push(trait);
+        const pers = PERSONALITIES.find((p) => p.label === label);
+        remaining.push(pers);
         render();
       }
 
       function resetAll() {
         keep = [];
         discard = [];
-        remaining = [...TRAITS];
+        remaining = [...PERSONALITIES];
         render();
       }
 
@@ -266,31 +265,80 @@
        **************************************/
       const PROMPT_TEXT = `I am a high school student exploring career options. My top 3 personalities are: [Personality 1], [Personality 2], and [Personality 3].
 
-Please suggest 8-10 careers that strongly align with these skills. For each career, include:
+Please suggest 8-10 careers that strongly align with these personalities. For each career, include:
 
 - A brief description (1-2 sentences).
-- Why it fits my skill combination.
+- Why it fits my personality combination.
 - Examples of industries or workplaces where this career exists.
 
-Then, recommend 1-2 additional skills I could develop to strengthen my fit for these careers.
+Then, recommend 1-2 additional personalities I could develop to strengthen my fit for these careers.
 
 Format your response in a clear list with headings.`;
 
-      async function copyPrompt() {
-        if (navigator.clipboard && window.isSecureContext) {
-          // Try the modern API
-          try {
-            await navigator.clipboard.writeText(PROMPT_TEXT);
-            alert("Prompt copied to clipboard!");
-            return;
-          } catch (err) {
-            console.error("Failed using navigator.clipboard:", err);
-          }
+      function copyPrompt() {
+        // If more than 3 in keep => error message
+        if (keep.length > 3) {
+          alert("Ensure only top 3 personalities are listed.");
+          return;
         }
-        // Fallback
+
+        // If keep.length is 0 => user hasn't chosen any
+        // If keep.length is 1 => 'My top personality is: X.'
+        // If keep.length is 2 => 'My top 2 personalities are: X, Y.'
+        // If keep.length is 3 => 'My top 3 personalities are: X, Y, Z.'
+
+        if (keep.length === 0) {
+          const nonePrompt = `I am a high school student exploring career options. I have not chosen any personalities yet.
+
+Please suggest how I might begin selecting personalities and potential careers based on them.`;
+          copyTextToClipboard(nonePrompt);
+          return;
+        }
+
+        let intro = "I have not chosen any personalities.";
+        if (keep.length === 1) {
+          intro = `My top personality is: ${keep[0]}.`;
+        } else if (keep.length === 2) {
+          intro = `My top 2 personalities are: ${keep[0]}, ${keep[1]}.`;
+        } else if (keep.length === 3) {
+          intro = `My top 3 personalities are: ${keep[0]}, ${keep[1]}, ${keep[2]}.`;
+        }
+
+        const finalPrompt = `${intro}
+
+Please suggest 8-10 careers that strongly align with these personalities. For each career, include:
+
+- A brief description (1-2 sentences).
+- Why it fits my personality combination.
+- Examples of industries or workplaces where this career exists.
+
+Then, recommend 1-2 additional personalities I could develop to strengthen my fit for these careers.
+
+Format your response in a clear list with headings.`;
+
+        copyTextToClipboard(finalPrompt);
+      }
+
+      async function copyTextToClipboard(text) {
+        // Attempt secure context
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text)
+            .then(() => {
+              alert("Prompt copied to clipboard!");
+            })
+            .catch((err) => {
+              console.error("Failed using navigator.clipboard:", err);
+              fallbackCopy(text);
+            });
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
         console.warn("Using fallback copy method.");
         const textArea = document.createElement("textarea");
-        textArea.value = PROMPT_TEXT;
+        textArea.value = text;
         textArea.style.position = "fixed";
         textArea.style.top = "-9999px";
         textArea.style.left = "-9999px";
