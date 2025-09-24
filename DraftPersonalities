@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personality Sorter</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Light pastel background gradient */
+      body {
+        background: linear-gradient(
+          to bottom right,
+          rgba(255, 240, 245, 1),
+          rgba(240, 255, 249, 1)
+        );
+      }
+      /* Subtle box shadow and hover lift for trait cards */
+      .trait-box {
+        transition: transform 0.1s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      .trait-box:hover {
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen">
+    <!-- Main container -->
+    <div id="app" class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8"></div>
+
+    <script>
+      /***********************************************
+       * Pastel Personality Sorter in pure HTML/JS
+       * Tailwind for styling, fallback copy logic.
+       ***********************************************/
+
+      // 40 personalities (with short descriptions)
+      const PERSONALITIES = [
+        { label: "Curious", description: "Eager to explore new ideas and experiences." },
+        { label: "Creative", description: "Able to produce original and imaginative ideas." },
+        { label: "Innovative", description: "Skilled at introducing new methods or ideas." },
+        { label: "Artistic", description: "Expresses themselves through various art forms." },
+        { label: "Adventurous", description: "Willing to take risks and try new things." },
+        { label: "Intellectual", description: "Engages deeply with ideas and enjoys thinking." },
+        { label: "Abstract thinker", description: "Good at thinking conceptually and seeing patterns." },
+        { label: "Imaginative", description: "Thinks in creative and fantastical ways." },
+        { label: "Versatile", description: "Adapts easily to different tasks or situations." },
+        { label: "Organised", description: "Keeps things tidy and plans ahead." },
+        { label: "Responsible", description: "Reliable and accountable for actions." },
+        { label: "Thorough", description: "Pays attention to detail and completeness." },
+        { label: "Disciplined", description: "Maintains control and follows routines." },
+        { label: "Efficient", description: "Achieves maximum productivity with minimum waste." },
+        { label: "Achievement-oriented", description: "Focused on setting and reaching goals." },
+        { label: "Systematic", description: "Uses methodical approaches to solve problems." },
+        { label: "Dependable", description: "Can be counted on and trusted." },
+        { label: "Outgoing", description: "Enjoys meeting and interacting with people." },
+        { label: "Energetic", description: "Full of vitality and activity." },
+        { label: "Assertive", description: "Confident in expressing opinions and needs." },
+        { label: "Sociable", description: "Finds joy in social interactions." },
+        { label: "Enthusiastic", description: "Shows intense enjoyment and interest." },
+        { label: "Talkative", description: "Enjoys engaging in conversation." },
+        { label: "Action-oriented", description: "Prefers doing over deliberating." },
+        { label: "Group-oriented", description: "Prefers to work with others in teams." },
+        { label: "Optimistic", description: "Looks at the positive side of situations." },
+        { label: "Expressive", description: "Openly shows thoughts and emotions." },
+        { label: "Cooperative", description: "Works well with others to reach goals." },
+        { label: "Compassionate", description: "Feels and shows concern for others." },
+        { label: "Considerate", description: "Thinks of others' feelings and needs." },
+        { label: "Helpful", description: "Eager to assist others." },
+        { label: "Empathetic", description: "Understands and shares others' emotions." },
+        { label: "Trusting", description: "Believes in the reliability of others." },
+        { label: "Patient", description: "Endures delays or problems calmly." },
+        { label: "Diplomatic", description: "Handles situations with sensitivity and tact." },
+        { label: "Resilient", description: "Bounces back from setbacks." },
+        { label: "Calm", description: "Maintains composure under pressure." },
+        { label: "Stable", description: "Emotionally grounded and consistent." },
+        { label: "Confident", description: "Believes in oneself and one's decisions." },
+        { label: "Adaptable", description: "Adjusts well to change." }
+      ];
+
+      // Sorting buckets
+      let keep = [];
+      let discard = [];
+      let remaining = [...PERSONALITIES];
+
+      // Store scroll positions
+      let scrollPositions = {
+        keep: 0,
+        discard: 0
+      };
+
+      function saveScrollPositions() {
+        const keepList = document.getElementById('keep-list');
+        const discardList = document.getElementById('discard-list');
+        
+        if (keepList) {
+          scrollPositions.keep = keepList.scrollTop;
+        }
+        if (discardList) {
+          scrollPositions.discard = discardList.scrollTop;
+        }
+      }
+
+      function restoreScrollPositions() {
+        // Use setTimeout to ensure DOM is updated before restoring scroll
+        setTimeout(() => {
+          const keepList = document.getElementById('keep-list');
+          const discardList = document.getElementById('discard-list');
+          
+          if (keepList) {
+            keepList.scrollTop = scrollPositions.keep;
+          }
+          if (discardList) {
+            discardList.scrollTop = scrollPositions.discard;
+          }
+        }, 0);
+      }
+
+      function render() {
+        // Save scroll positions before re-rendering
+        saveScrollPositions();
+
+        const app = document.getElementById("app");
+        const currentPersonality = remaining[0];
+        const sortedCount = keep.length + discard.length;
+        const total = PERSONALITIES.length;
+        const progressPercent = Math.round((sortedCount / total) * 100);
+
+        app.innerHTML = `
+          <h1 class="text-4xl font-extrabold mb-4 text-center text-purple-600">Sort Your Personality Traits</h1>
+          <p class="mb-6 text-center text-md text-purple-700 max-w-xl mx-auto">
+            Decide for each personality: Keep or Discard.<br/>
+            You can edit your choices anytime.
+          </p>
+
+          <!-- Progress bar -->
+          <div class="mb-8 text-center">
+            <div class="w-full bg-purple-100 rounded-full h-4">
+              <div class="bg-purple-300 h-4 rounded-full" style="width: ${progressPercent}%"></div>
+            </div>
+            <p class="text-sm text-purple-700 mt-1 font-medium">
+              ${sortedCount} of ${total} sorted (${progressPercent}%)
+            </p>
+          </div>
+
+          <!-- 3 columns layout -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Discard Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-pink-600 text-center">Discard</h2>
+              <ul id="discard-list" class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
+                ${discard
+                  .map((label) => {
+                    const p = PERSONALITIES.find((pers) => pers.label === label);
+                    return `
+                      <li class="p-3 border border-pink-200 rounded bg-pink-50 trait-box">
+                        <p class="font-semibold text-pink-700 flex justify-between items-center">
+                          ${p.label}
+                          <button class="text-xs text-pink-600 underline ml-2"
+                            onclick="revertPersonality('${label}', 'discard')"
+                          >
+                            Remove
+                          </button>
+                        </p>
+                        <p class="text-xs text-pink-700 mt-1">${p.description}</p>
+                      </li>
+                    `;
+                  })
+                  .join("")}
+              </ul>
+            </div>
+
+            <!-- Middle Column: Current Personality -->
+            <div class="text-center">
+              <h2 class="text-xl font-bold mb-2 text-gray-700">Current Personality</h2>
+              ${
+                currentPersonality
+                  ? `
+                    <div class="p-6 border border-gray-200 rounded bg-white trait-box inline-block">
+                      <p class="font-semibold text-gray-800 text-lg mb-1">${currentPersonality.label}</p>
+                      <p class="text-sm text-gray-600 mb-4">${currentPersonality.description}</p>
+                      <div class="space-x-4">
+                        <button onclick="keepPersonality()"
+                          class="px-4 py-2 bg-green-200 text-green-800 font-medium rounded hover:bg-green-300"
+                        >
+                          Keep
+                        </button>
+                        <button onclick="discardPersonality()"
+                          class="px-4 py-2 bg-pink-200 text-pink-800 font-medium rounded hover:bg-pink-300"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </div>
+                  `
+                  : `<p class='text-sm text-gray-700 italic'>All personalities sorted! You can still make changes below.</p>`
+              }
+              <!-- Reset Button -->
+              <button onclick="resetAll()"
+                class="block mt-5 px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 mx-auto"
+              >
+                Reset All
+              </button>
+            </div>
+
+            <!-- Keep Column -->
+            <div>
+              <h2 class="text-xl font-bold mb-2 text-green-600 text-center">Keep <span class="text-sm text-green-700">(${keep.length})</span></h2>
+              <ul id="keep-list" class="space-y-2 max-h-[360px] overflow-y-auto pr-2">
+                ${
+                  keep
+                    .map((label) => {
+                      const p = PERSONALITIES.find((pers) => pers.label === label);
+                      return `
+                        <li class="p-3 border border-green-200 rounded bg-green-50 trait-box">
+                          <p class="font-semibold text-green-700 flex justify-between items-center">
+                            ${p.label}
+                            <button class="text-xs text-green-600 underline ml-2"
+                              onclick="revertPersonality('${label}', 'keep')"
+                            >
+                              Remove
+                            </button>
+                          </p>
+                          <p class="text-xs text-green-700 mt-1">${p.description}</p>
+                        </li>
+                      `;
+                    })
+                    .join("")
+                }
+              </ul>
+            </div>
+          </div>
+
+          <!-- Prompt Box with Copy Button -->
+          <div class="mt-10 p-4 border border-gray-200 rounded bg-white trait-box w-fit mx-auto text-center">
+            <h3 class="text-lg font-bold mb-2 text-purple-700">Your Prompt</h3>
+            <p class="text-sm text-gray-600 whitespace-pre-wrap" id="promptText"></p>
+            <button
+              onclick="copyPrompt()"
+              class="mt-3 px-4 py-2 bg-purple-200 text-purple-800 text-sm font-medium rounded hover:bg-purple-300"
+            >
+              Copy This Prompt
+            </button>
+          </div>
+        `;
+
+        // Insert the prompt text
+        const promptEl = document.getElementById("promptText");
+        if (promptEl) {
+          promptEl.textContent = PROMPT_TEXT;
+        }
+
+        // Restore scroll positions after rendering
+        restoreScrollPositions();
+      }
+
+      /**************************************
+       * Sorting Logic + Revert + Reset
+       **************************************/
+      function keepPersonality() {
+        if (!remaining[0]) return;
+        keep.push(remaining.shift().label);
+        render();
+      }
+
+      function discardPersonality() {
+        if (!remaining[0]) return;
+        discard.push(remaining.shift().label);
+        render();
+      }
+
+      function revertPersonality(label, from) {
+        if (from === "keep") {
+          keep = keep.filter((s) => s !== label);
+        } else if (from === "discard") {
+          discard = discard.filter((s) => s !== label);
+        }
+        const pers = PERSONALITIES.find((p) => p.label === label);
+        remaining.push(pers);
+        render();
+      }
+
+      function resetAll() {
+        keep = [];
+        discard = [];
+        remaining = [...PERSONALITIES];
+        // Reset scroll positions when resetting
+        scrollPositions = { keep: 0, discard: 0 };
+        render();
+      }
+
+      /**************************************
+       * Copy to Clipboard with Fallback
+       **************************************/
+      const PROMPT_TEXT = `I am a high school student exploring career options. My top 3 personalities are: [Personality 1], [Personality 2], and [Personality 3].
+
+Please suggest 8-10 careers that strongly align with these personalities. For each career, include:
+
+- A brief description (1-2 sentences).
+- Why it fits my personality combination.
+- Examples of industries or workplaces where this career exists.
+
+Then, recommend 1-2 additional personalities I could develop to strengthen my fit for these careers.
+
+Format your response in a clear list with headings.`;
+
+      function copyPrompt() {
+        // If more than 3 in keep => error message
+        if (keep.length > 3) {
+          alert("Ensure only top 3 personalities are listed.");
+          return;
+        }
+
+        // If keep.length is 0 => user hasn't chosen any
+        // If keep.length is 1 => 'My top personality is: X.'
+        // If keep.length is 2 => 'My top 2 personalities are: X, Y.'
+        // If keep.length is 3 => 'My top 3 personalities are: X, Y, Z.'
+
+        if (keep.length === 0) {
+          const nonePrompt = `I am a high school student exploring career options. I have not chosen any personalities yet.
+
+Please suggest how I might begin selecting personalities and potential careers based on them.`;
+          copyTextToClipboard(nonePrompt);
+          return;
+        }
+
+        let intro = "I have not chosen any personalities.";
+        if (keep.length === 1) {
+          intro = `My top personality is: ${keep[0]}.`;
+        } else if (keep.length === 2) {
+          intro = `My top 2 personalities are: ${keep[0]}, ${keep[1]}.`;
+        } else if (keep.length === 3) {
+          intro = `My top 3 personalities are: ${keep[0]}, ${keep[1]}, ${keep[2]}.`;
+        }
+
+        const finalPrompt = `${intro}
+
+Please suggest 8-10 careers that strongly align with these personalities. For each career, include:
+
+- A brief description (1-2 sentences).
+- Why it fits my personality combination.
+- Examples of industries or workplaces where this career exists.
+
+Then, recommend 1-2 additional personalities I could develop to strengthen my fit for these careers.
+
+Format your response in a clear list with headings.`;
+
+        copyTextToClipboard(finalPrompt);
+      }
+
+      async function copyTextToClipboard(text) {
+        // Attempt secure context
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text)
+            .then(() => {
+              alert("Prompt copied to clipboard!");
+            })
+            .catch((err) => {
+              console.error("Failed using navigator.clipboard:", err);
+              fallbackCopy(text);
+            });
+        } else {
+          fallbackCopy(text);
+        }
+      }
+
+      function fallbackCopy(text) {
+        console.warn("Using fallback copy method.");
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.top = "-9999px";
+        textArea.style.left = "-9999px";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            alert("Prompt copied to clipboard!");
+          } else {
+            alert("Failed to copy prompt via fallback.");
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback copy failed:", fallbackErr);
+          alert("Failed to copy prompt.");
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
+      // Initial render
+      render();
+    </script>
+  </body>
+</html>
